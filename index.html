@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOMI QR · 糯米码 - 极简纯本地在线二维码生成器 | nomi.cn</title>
+  <meta name="description" content="NOMI QR (nomi.cn) 是一款免费、无广告、纯浏览器本地运行的极简二维码生成器，支持网址、文本一键生成高清自定义二维码，数据绝不上传服务器。" />
+  <meta name="keywords" content="二维码生成器,在线二维码,NOMI QR,糯米码,nomi.cn,免费二维码制作" />
+  <!-- 引入 Tailwind CSS 与 轻量级 QRCode 生成库 -->
+  <script src="https://tailwindcss.com"></script>
+  <script src="https://cloudflare.com"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f8fafc;
+    }
+    #qrcode img, #qrcode canvas {
+      margin: 0 auto;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 antialiased">
+
+  <!-- 顶部导航 -->
+  <header class="w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-5 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg tracking-tighter">
+          N
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight text-slate-900">NOMI QR</span>
+          <span class="text-xs text-slate-400 ml-1.5 hidden sm:inline">糯米码 · 极简二维码</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-slate-500">
+        <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          纯本地生成 · 隐私安全
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主体内容区 -->
+  <main class="max-w-4xl w-full mx-auto px-5 py-10 flex-grow">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+        输入内容，即刻生成高清二维码
+      </h1>
+      <p class="text-sm text-slate-500 mt-2">
+        零广告、无需注册，所有数据仅在您的浏览器本地运算，绝不经过任何服务器。
+      </p>
+    </div>
+
+    <!-- 核心工作台卡片 -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      
+      <!-- 左侧：输入与自定义参数 -->
+      <div class="md:col-span-7 space-y-5">
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label for="qr-text" class="text-sm font-semibold text-slate-700">网址或文本内容</label>
+            <button id="clear-btn" class="text-xs text-slate-400 hover:text-slate-700 transition">清空内容</button>
+          </div>
+          <textarea 
+            id="qr-text" 
+            rows="4" 
+            placeholder="请输入网址（如 https://nomi.cn）或任意文字..."
+            class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition resize-none"
+          >https://nomi.cn</textarea>
+        </div>
+
+        <!-- 样式自定义面板 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
+          <!-- 前景色 -->
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1.5">码点颜色</label>
+            <div class="flex items-center gap-2 border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50/50">
+              <input type="color" id="color-dark" value="#0f172a" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0" />
+              <span id="color-dark-text" class="text-xs font-mono text-slate-600 uppercase">#0F172A</span>
+            </div>
+          </div>
+
+          <!-- 背景色 -->
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1.5">背景颜色</label>
+            <div class="flex items-center gap-2 border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50/50">
+              <input type="color" id="color-light" value="#ffffff" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0" />
+              <span id="color-light-text" class="text-xs font-mono text-slate-600 uppercase">#FFFFFF</span>
+            </div>
+          </div>
+
+          <!-- 尺寸选择 -->
+          <div class="col-span-2 sm:col-span-1">
+            <label for="qr-size" class="block text-xs font-medium text-slate-500 mb-1.5">导出尺寸</label>
+            <select id="qr-size" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 bg-slate-50/50 focus:outline-none focus:ring-2 focus:ring-slate-900">
+              <option value="256">标准 (256×256)</option>
+              <option value="512" selected>高清 (512×512)</option>
+              <option value="1024">超清 (1024×1024)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 快捷预设标签 -->
+        <div class="pt-2">
+          <span class="text-xs text-slate-400 block mb-2">快捷配色方案：</span>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="applyTheme('#0f172a', '#ffffff')" class="px-3 py-1 text-xs rounded-md border border-slate-200 hover:bg-slate-100 transition">经典黑</button>
+            <button type="button" onclick="applyTheme('#1d4ed8', '#eff6ff')" class="px-3 py-1 text-xs rounded-md border border-blue-200 bg-blue-50/50 text-blue-700 hover:bg-blue-100 transition">极客蓝</button>
+            <button type="button" onclick="applyTheme('#047857', '#ecfdf5')" class="px-3 py-1 text-xs rounded-md border border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 transition">翡翠绿</button>
+            <button type="button" onclick="applyTheme('#7c3aed', '#f5f3ff')" class="px-3 py-1 text-xs rounded-md border border-purple-200 bg-purple-50/50 text-purple-700 hover:bg-purple-100 transition">星云紫</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：实时预览与下载 -->
+      <div class="md:col-span-5 flex flex-col items-center justify-center bg-slate-50 rounded-xl p-6 border border-slate-200/70">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center w-56 h-56">
+          <div id="qrcode" class="flex items-center justify-center"></div>
+        </div>
+        
+        <p id="status-tip" class="text-xs text-slate-400 mt-3 mb-4 text-center">
+          实时预览 · 支持微信/支付宝直接扫码
+        </p>
+
+        <button 
+          id="download-btn" 
+          class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          下载高清 PNG 二维码
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 底部版权与品牌展示 -->
+  <footer class="w-full border-t border-slate-200/80 bg-white py-6 mt-12">
+    <div class="max-w-4xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+      <div>
+        © <span id="year"></span> <strong>NOMI.CN</strong> · 糯米极简工具系列
+      </div>
+      <div class="flex items-center gap-4">
+        <span>纯本地静态运行</span>
+        <span>·</span>
+        <a href="mailto:hi@nomi.cn" class="hover:text-slate-600 transition">商务与域名合作</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const textInput = document.getElementById('qr-text');
+    const colorDarkInput = document.getElementById('color-dark');
+    const colorLightInput = document.getElementById('color-light');
+    const colorDarkText = document.getElementById('color-dark-text');
+    const colorLightText = document.getElementById('color-light-text');
+    const sizeSelect = document.getElementById('qr-size');
+    const qrContainer = document.getElementById('qrcode');
+    const downloadBtn = document.getElementById('download-btn');
+    const clearBtn = document.getElementById('clear-btn');
+
+    let qrCodeInstance = null;
+
+    function generateQR() {
+      const content = textInput.value.trim() || 'https://nomi.cn';
+      const darkColor = colorDarkInput.value;
+      const lightColor = colorLightInput.value;
+      const size = parseInt(sizeSelect.value, 10);
+
+      colorDarkText.textContent = darkColor;
+      colorLightText.textContent = lightColor;
+
+      qrContainer.innerHTML = '';
+
+      // 使用隐藏容器生成指定高分辨率尺寸，预览区域CSS自适应缩放
+      qrCodeInstance = new QRCode(qrContainer, {
+        text: content,
+        width: size,
+        height: size,
+        colorDark: darkColor,
+        colorLight: lightColor,
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // 调整预览图视觉大小固定为 190px，但实际导出保留高分辨率
+      setTimeout(() => {
+        const img = qrContainer.querySelector('img');
+        const canvas = qrContainer.querySelector('canvas');
+        if (img) {
+          img.style.width = '190px';
+          img.style.height = '190px';
+        }
+        if (canvas && !img) {
+          canvas.style.width = '190px';
+          canvas.style.height = '190px';
+        }
+      }, 20);
+    }
+
+    function applyTheme(dark, light) {
+      colorDarkInput.value = dark;
+      colorLightInput.value = light;
+      generateQR();
+    }
+
+    // 监听输入变化实时生成
+    textInput.addEventListener('input', generateQR);
+    colorDarkInput.addEventListener('input', generateQR);
+    colorLightInput.addEventListener('input', generateQR);
+    sizeSelect.addEventListener('change', generateQR);
+
+    clearBtn.addEventListener('click', () => {
+      textInput.value = '';
+      textInput.focus();
+      generateQR();
+    });
+
+    // 下载高清图片
+    downloadBtn.addEventListener('click', () => {
+请谨慎使用此类代码。
+const canvas = qrContainer.querySelector('canvas');
+const img = qrContainer.querySelector('img');
+let dataUrl = '';
+if (canvas) {
+dataUrl = canvas.toDataURL('image/png');
+} else if (img && img.src) {
+dataUrl = img.src;
+}
+if (dataUrl) {
+const link = document.createElement('a');
+link.download = NOMI-QR-${Date.now()}.png;
+link.href = dataUrl;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+});
+// 初始化生成
+generateQR();
